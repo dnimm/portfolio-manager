@@ -21,13 +21,13 @@ A command-line portfolio management application built with Python and Rich libra
    ```bash
 # 1. Clone repository
 git clone https://github.com/dnimm/portfolio-manager.git
-cd portfolio-manager
+cd portfolioapp
 
 # 2. Checkout assignment branch
 git checkout assignment-1
 
 # 3. Create virtual environment
-python -m venv venv
+python3 -m venv venv
 
 # 4. Activate virtual environment
 # On macOS/Linux:
