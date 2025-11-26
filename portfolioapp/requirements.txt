@@ -1,0 +1,6 @@
+rich
+SQLAlchemy
+PyMySQL
+pytest
+pytest-cov
+cryptography
