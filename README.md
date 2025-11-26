@@ -1,6 +1,7 @@
 # portfolio-manager
 
 Summary of Implemented Features
+
 Database Integration
 
 Database Technology
@@ -54,19 +55,27 @@ Timestamp
 A new “View Transactions” menu option displays these using a rich table.
 
 Running the program
+
 Create virtual environment in project folder
+
 cd portfolioapp
+
 python3 -m venv venv
+
 source venv/bin/activate
 
 Install dependencies
+
 pip install -r requirements.txt
 
 Set up MySQL Database
+
 CREATE DATABASE portfolio_db;
 
 Insert admin user and any test securities using SQL query if you want
+
 INSERT INTO user (username, firstname, lastname, password, balance)
+
 VALUES ('admin', 'Admin', 'User', 'admin123', 10000.00);
 
 INSERT INTO security (ticker, issuer, price) VALUES
@@ -89,20 +98,29 @@ database_config = {
 }
 
 Run the application
+
 python3 -m portfolioapp.main
+
 How to Use the Application
+
 Start the app:
+
 python3 -m portfolioapp.main
 
 Running Tests
+
 Create virtual environment outside of project folder
+
 python3 -m venv venv
+
 source venv/bin/activate
 
 Run all tests
+
 pytest
 
 Run tests with coverage
+
 pytest --cov=.
 
 OR
@@ -110,6 +128,7 @@ OR
 pytest --cov=portfolioapp --cov-report=term-missing
 
 Generate coverage report
+
 pytest --cov=. --cov-report=html
 
 COVERAGE REPORT:
