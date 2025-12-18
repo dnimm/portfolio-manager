@@ -1,0 +1,2 @@
+class UnsupportedUserOperationError(Exception):
+    pass

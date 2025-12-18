@@ -1,0 +1,8 @@
+rich
+SQLAlchemy
+PyMySQL
+pytest
+pytest-cov
+cryptography
+flask
+flask_sqlalchemy
