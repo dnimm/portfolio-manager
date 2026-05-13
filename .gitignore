@@ -9,3 +9,6 @@ notes/
 app.*
 local/
 .ruff*
+node_modules/
+app/frontend/node_modules/
+.env
