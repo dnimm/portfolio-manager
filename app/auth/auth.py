@@ -4,9 +4,13 @@ import functools
 from typing import Optional
 
 import requests
-from flask import current_app, g, jsonify, request
+from flask import current_app, g, jsonify, request, Blueprint
 from jose import JWTError, jwt
+import base64
+import os
+from urllib.parse import urlencode
 
+import requests
 
 _jwks_cache: Optional[dict] = None
 

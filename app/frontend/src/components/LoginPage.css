@@ -1,0 +1,97 @@
+.lp-root {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: #f4f6f5;
+}
+
+.lp-hero {
+  background: #06291f;
+  color: white;
+  padding: 80px;
+  display: flex;
+  align-items: center;
+}
+
+.lp-logo {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 40px;
+}
+
+.lp-logo-icon::before {
+  content: "🥝";
+  margin-right: 8px;
+}
+
+.lp-headline {
+  font-size: 54px;
+  line-height: 1;
+  margin-bottom: 20px;
+}
+
+.lp-subline {
+  color: #d2d8d4;
+  font-size: 18px;
+}
+
+.lp-features {
+  margin-top: 30px;
+  padding-left: 0;
+  list-style: none;
+}
+
+.lp-features li {
+  margin-bottom: 12px;
+}
+
+.lp-check {
+  color: #73e285;
+  margin-right: 10px;
+}
+
+.lp-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lp-card {
+  width: 420px;
+  background: white;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.lp-card-logo {
+  text-align: center;
+  font-size: 36px;
+  margin-bottom: 20px;
+}
+
+.lp-card-title {
+  text-align: center;
+}
+
+.lp-card-sub {
+  text-align: center;
+  color: #777;
+}
+
+.lp-signin-btn {
+  width: 100%;
+  border: none;
+  background: #198754;
+  color: white;
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.lp-footer-note {
+  color: #777;
+  font-size: 13px;
+  text-align: center;
+  margin-top: 20px;
+}

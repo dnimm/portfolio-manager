@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-
 from flask import Blueprint, jsonify, request, g
 
 from app.auth.auth import requires_auth
@@ -21,7 +20,7 @@ class _AuthUser:
 
 def _token_username() -> str:
     u = g.current_user or {}
-    return (u.get("cognito:username") or u.get("username") or "").strip()
+    return (u.get("cognito:username") or u.get("username") or u.get("sub") or "").strip()
 
 
 @portfolio_bp.get("/")
@@ -35,8 +34,9 @@ def get_all_portfolios():
 @requires_auth
 def get_portfolio(portfolio_id: int):
     portfolio = portfolio_service.get_portfolio_by_id(portfolio_id)
+
     if not portfolio:
-        return jsonify({"error": "Not Found", "detail": f"Portfolio {portfolio_id} not found"}), 404
+        return jsonify({"error": "Not Found", "detail": "Portfolio not found"}), 404
 
     try:
         check_portfolio_access(_AuthUser(_token_username()), portfolio, "viewer")
@@ -53,6 +53,7 @@ def get_portfolios_by_user(username: str):
         return jsonify({"error": "Forbidden", "detail": "Cannot view other users' portfolios"}), 403
 
     user = user_service.get_user_by_username(username)
+
     if not user:
         return jsonify({"error": "Not Found", "detail": f"User {username} not found"}), 404
 
@@ -69,10 +70,16 @@ def create_portfolio():
         return jsonify({"error": "Forbidden", "detail": "Cannot create portfolio for another user"}), 403
 
     user = user_service.get_user_by_username(payload.username)
+
     if not user:
         return jsonify({"error": "Not Found", "detail": f"User {payload.username} not found"}), 404
 
-    portfolio_id = portfolio_service.create_portfolio(payload.name, payload.description, user)
+    portfolio_id = portfolio_service.create_portfolio(
+        payload.name,
+        payload.description,
+        user,
+    )
+
     db.session.commit()
     return jsonify({"id": portfolio_id}), 201
 
@@ -81,21 +88,46 @@ def create_portfolio():
 @requires_auth
 def delete_portfolio(portfolio_id: int):
     portfolio = portfolio_service.get_portfolio_by_id(portfolio_id)
+
     if not portfolio:
         return jsonify({"error": "Not Found", "detail": "Portfolio not found"}), 404
 
     if portfolio.owner != _token_username():
         return jsonify({"error": "Forbidden", "detail": "Only the owner can delete a portfolio"}), 403
 
+    if portfolio.investments:
+        return jsonify({
+            "error": "Bad Request",
+            "detail": "Cannot delete portfolio because it still has holdings"
+        }), 400
+
     portfolio_service.delete_portfolio(portfolio_id)
     db.session.commit()
+
     return jsonify({"message": "Portfolio deleted successfully"}), 200
+
+
+@portfolio_bp.get("/<int:portfolio_id>/holdings")
+@requires_auth
+def get_portfolio_holdings(portfolio_id: int):
+    portfolio = portfolio_service.get_portfolio_by_id(portfolio_id)
+
+    if not portfolio:
+        return jsonify({"error": "Not Found", "detail": "Portfolio not found"}), 404
+
+    try:
+        check_portfolio_access(_AuthUser(_token_username()), portfolio, "viewer")
+    except AuthorizationError as e:
+        return jsonify({"error": "Forbidden", "detail": str(e)}), 403
+
+    return jsonify([i.__to_dict__() for i in portfolio.investments]), 200
 
 
 @portfolio_bp.get("/<int:portfolio_id>/transactions")
 @requires_auth
 def get_portfolio_transactions(portfolio_id: int):
     portfolio = portfolio_service.get_portfolio_by_id(portfolio_id)
+
     if not portfolio:
         return jsonify({"error": "Not Found", "detail": "Portfolio not found"}), 404
 
@@ -112,6 +144,7 @@ def get_portfolio_transactions(portfolio_id: int):
 @requires_auth
 def grant_access(portfolio_id: int):
     portfolio = portfolio_service.get_portfolio_by_id(portfolio_id)
+
     if not portfolio:
         return jsonify({"error": "Not Found", "detail": "Portfolio not found"}), 404
 
@@ -121,6 +154,7 @@ def grant_access(portfolio_id: int):
     payload = GrantAccessSchema.model_validate(request.get_json() or {})
 
     target_user = user_service.get_user_by_username(payload.username)
+
     if not target_user:
         return jsonify({"error": "Not Found", "detail": f"User {payload.username} not found"}), 404
 
@@ -129,10 +163,17 @@ def grant_access(portfolio_id: int):
         .filter_by(portfolio_id=portfolio_id, username=payload.username)
         .one_or_none()
     )
+
     if existing:
         existing.role = payload.role
     else:
-        db.session.add(PortfolioAccess(portfolio_id=portfolio_id, username=payload.username, role=payload.role))
+        db.session.add(
+            PortfolioAccess(
+                portfolio_id=portfolio_id,
+                username=payload.username,
+                role=payload.role,
+            )
+        )
 
     db.session.commit()
     return jsonify({"message": "Access granted"}), 201
@@ -142,6 +183,7 @@ def grant_access(portfolio_id: int):
 @requires_auth
 def revoke_access(portfolio_id: int, username: str):
     portfolio = portfolio_service.get_portfolio_by_id(portfolio_id)
+
     if not portfolio:
         return jsonify({"error": "Not Found", "detail": "Portfolio not found"}), 404
 
@@ -153,9 +195,11 @@ def revoke_access(portfolio_id: int, username: str):
         .filter_by(portfolio_id=portfolio_id, username=username)
         .one_or_none()
     )
+
     if not access:
         return jsonify({"error": "Not Found", "detail": "Access grant not found"}), 404
 
     db.session.delete(access)
     db.session.commit()
+
     return jsonify({"message": "Access revoked"}), 200
